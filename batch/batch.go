@@ -1,21 +1,17 @@
 package batch
 
-import "errors"
-
-var (
-	ErrNilMap       = errors.New("unexpected nil map")
-	ErrKeyNotFound  = errors.New("key not found")
-	ErrDuplicateKey = errors.New("duplicate key")
+import (
+	"github.com/leobishop234/util/srverr"
 )
 
 func GetMapValue[K comparable, V any](itemMap map[K]V, key K) (item V, err error) {
 	if itemMap == nil {
-		return item, ErrNilMap
+		return item, srverr.New(srverr.ErrCodeInternal, "unexpected nil map", nil)
 	}
 
 	item, ok := itemMap[key]
 	if !ok {
-		return item, ErrKeyNotFound
+		return item, srverr.New(srverr.ErrCodeNotFound, "key not found", nil)
 	}
 
 	return item, nil
@@ -23,12 +19,12 @@ func GetMapValue[K comparable, V any](itemMap map[K]V, key K) (item V, err error
 
 func GetMapSlice[K comparable, V any](itemsMap map[K][]V, key K) ([]V, error) {
 	if itemsMap == nil {
-		return nil, ErrNilMap
+		return nil, srverr.New(srverr.ErrCodeInternal, "unexpected nil map", nil)
 	}
 
 	items, ok := itemsMap[key]
 	if !ok {
-		return nil, ErrKeyNotFound
+		return nil, srverr.New(srverr.ErrCodeNotFound, "key not found", nil)
 	}
 
 	return items, nil
@@ -67,7 +63,7 @@ func IndexBy[I, K comparable](items []I, keyFn func(item *I) K) (map[K]I, error)
 	for _, item := range items {
 		key := keyFn(&item)
 		if _, exists := itemsMap[key]; exists {
-			return nil, ErrDuplicateKey
+			return nil, srverr.New(srverr.ErrCodeInternal, "duplicate key", nil)
 		}
 		itemsMap[key] = item
 	}
@@ -83,7 +79,7 @@ func IndexTo[I, K comparable, O any](items []I, keyFn func(item *I) K, parseFn f
 	for _, item := range items {
 		key := keyFn(&item)
 		if _, exists := itemsMap[key]; exists {
-			return nil, ErrDuplicateKey
+			return nil, srverr.New(srverr.ErrCodeInternal, "duplicate key", nil)
 		}
 		itemsMap[key] = parseFn(&item)
 	}
