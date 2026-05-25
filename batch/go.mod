@@ -1,4 +1,4 @@
-module github.com/leobishop234/batch
+module github.com/leobishop234/util/batch
 
 go 1.26.2
 
