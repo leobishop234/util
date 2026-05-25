@@ -3,6 +3,7 @@ package batch
 import (
 	"testing"
 
+	"github.com/leobishop234/util/srverr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,7 +13,7 @@ func TestGetMapValue(t *testing.T) {
 		name     string
 		input    map[string]int
 		key      string
-		err      error
+		err      srverr.ErrCode
 		expected int
 	}
 
@@ -27,21 +28,25 @@ func TestGetMapValue(t *testing.T) {
 			name:  "error on empty map",
 			input: nil,
 			key:   "bar",
-			err:   ErrNilMap,
+			err:   srverr.ErrCodeInternal,
 		},
 		{
 			name:  "error on missing key",
 			input: map[string]int{"wibble": 0, "foo": 1},
 			key:   "bar",
-			err:   ErrKeyNotFound,
+			err:   srverr.ErrCodeNotFound,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := GetMapValue(tc.input, tc.key)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected error code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
@@ -51,7 +56,7 @@ func TestGetMapSlice(t *testing.T) {
 		name     string
 		input    map[string][]int
 		key      string
-		err      error
+		err      srverr.ErrCode
 		expected []int
 	}
 
@@ -78,21 +83,25 @@ func TestGetMapSlice(t *testing.T) {
 			name:  "error on empty map",
 			input: nil,
 			key:   "bar",
-			err:   ErrNilMap,
+			err:   srverr.ErrCodeInternal,
 		},
 		{
 			name:  "error on missing key",
 			input: map[string][]int{"wibble": {0}, "foo": {1, 2}},
 			key:   "bar",
-			err:   ErrKeyNotFound,
+			err:   srverr.ErrCodeNotFound,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := GetMapSlice(tc.input, tc.key)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected err code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
@@ -213,7 +222,7 @@ func TestIndexBy(t *testing.T) {
 		name     string
 		input    []int
 		keyFn    func(item *int) string
-		err      error
+		err      srverr.ErrCode
 		expected map[string]int
 	}
 
@@ -255,15 +264,19 @@ func TestIndexBy(t *testing.T) {
 				}
 				return "odd"
 			},
-			err: ErrDuplicateKey,
+			err: srverr.ErrCodeInternal,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := IndexBy(tc.input, tc.keyFn)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected err code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
@@ -274,7 +287,7 @@ func TestIndexTo(t *testing.T) {
 		input    []int
 		keyFn    func(item *int) string
 		parserFn func(item *int) bool
-		err      error
+		err      srverr.ErrCode
 		expected map[string]bool
 	}
 
@@ -325,15 +338,19 @@ func TestIndexTo(t *testing.T) {
 			parserFn: func(item *int) bool {
 				return *item > 0
 			},
-			err: ErrDuplicateKey,
+			err: srverr.ErrCodeInternal,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := IndexTo(tc.input, tc.keyFn, tc.parserFn)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected err code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
@@ -343,7 +360,7 @@ func TestGroupBy(t *testing.T) {
 		name     string
 		input    []int
 		keyFn    func(item *int) bool
-		err      error
+		err      srverr.ErrCode
 		expected map[bool][]int
 	}
 
@@ -380,8 +397,12 @@ func TestGroupBy(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := GroupBy(tc.input, tc.keyFn)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected err code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
@@ -392,7 +413,7 @@ func TestGroupTo(t *testing.T) {
 		input    []int
 		keyFn    func(item *int) bool
 		parserFn func(item *int) string
-		err      error
+		err      srverr.ErrCode
 		expected map[bool][]string
 	}
 
@@ -441,8 +462,12 @@ func TestGroupTo(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := GroupTo(tc.input, tc.keyFn, tc.parserFn)
-			require.ErrorIs(t, err, tc.err)
-			assert.Equal(t, tc.expected, got)
+			if tc.err > 0 {
+				require.True(t, srverr.ErrorIs(err, tc.err), "expected err code %d, got %v", tc.err, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.expected, got)
+			}
 		})
 	}
 }
