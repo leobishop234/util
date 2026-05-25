@@ -1,0 +1,4 @@
+project_name: leobishop234/util
+before:
+  hooks:
+    - go mod tidy
