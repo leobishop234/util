@@ -133,3 +133,21 @@ func TransformSlice[I, O any](items []I, parseFn func(item I) O) []O {
 	}
 	return out
 }
+
+func Unique[K comparable](items []K) []K {
+	if items == nil {
+		return nil
+	}
+
+	seen := make(map[K]bool, len(items))
+	out := make([]K, 0, len(items))
+	for _, item := range items {
+		if _, exists := seen[item]; exists {
+			continue
+		}
+		seen[item] = true
+		out = append(out, item)
+	}
+
+	return out
+}

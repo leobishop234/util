@@ -514,3 +514,41 @@ func TestTransformSlice(t *testing.T) {
 		})
 	}
 }
+
+func TestUnique(t *testing.T) {
+	type testCase struct {
+		name     string
+		input    []string
+		expected []string
+	}
+
+	tests := []testCase{
+		{
+			name:     "nil input returns nil",
+			input:    nil,
+			expected: nil,
+		},
+		{
+			name:     "empty slice returns empty slice",
+			input:    []string{},
+			expected: []string{},
+		},
+		{
+			name:     "returns same values when already unique",
+			input:    []string{"a", "b", "c"},
+			expected: []string{"a", "b", "c"},
+		},
+		{
+			name:     "removes duplicate values and keeps first seen order",
+			input:    []string{"b", "a", "b", "c", "a", "d", "d"},
+			expected: []string{"b", "a", "c", "d"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Unique(tc.input)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
