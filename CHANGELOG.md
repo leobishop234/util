@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/leobishop234/util/compare/v1.0.1...v1.0.2) (2026-05-25)
+
+
+### Bug Fixes
+
+* autoversioning release pipeline ([#7](https://github.com/leobishop234/util/issues/7)) ([a942ac7](https://github.com/leobishop234/util/commit/a942ac7a6396ea303c91c3ec71e1e1a943add0f8))
+
 ## [1.0.1](https://github.com/leobishop234/util/compare/v1.0.0...v1.0.1) (2026-05-25)
 
 
