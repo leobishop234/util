@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/leobishop234/util/compare/v1.0.2...v1.1.0) (2026-05-26)
+
+
+### Features
+
+* Unique function ([#9](https://github.com/leobishop234/util/issues/9)) ([2989d5a](https://github.com/leobishop234/util/commit/2989d5a3ac73a4a1398480844fd5fed7c74ba367))
+
 ## [1.0.2](https://github.com/leobishop234/util/compare/v1.0.1...v1.0.2) (2026-05-25)
 
 
