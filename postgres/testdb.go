@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leobishop234/util/log"
 	"github.com/leobishop234/util/srverr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -85,7 +84,7 @@ func newTestDBConfig(ctx context.Context) (Config, *testDBContainer, error) {
 
 func NewServiceTestDB[D Closer](
 	t *testing.T,
-	open func(ctx context.Context, logger *log.Logger, conf, devConf Config) (D, error),
+	open func(ctx context.Context, conf, devConf Config) (D, error),
 	seed func(t *testing.T, db D),
 ) *TestDB[D] {
 	t.Helper()
@@ -96,7 +95,7 @@ func NewServiceTestDB[D Closer](
 	devConfig, devContainer, err := newTestDBConfig(t.Context())
 	require.NoError(t, err)
 
-	db, err := open(t.Context(), log.TestLogger(t), config, devConfig)
+	db, err := open(t.Context(), config, devConfig)
 	require.NoError(t, err)
 
 	if seed != nil {
