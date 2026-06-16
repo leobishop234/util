@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/leobishop234/util/compare/v1.1.0...v1.1.1) (2026-06-16)
+
+
+### Bug Fixes
+
+* removing postgres test db logger requirement ([#11](https://github.com/leobishop234/util/issues/11)) ([c4c4776](https://github.com/leobishop234/util/commit/c4c4776381dc9466541f86417bc6475c8061e2d9))
+
 ## [1.1.0](https://github.com/leobishop234/util/compare/v1.0.2...v1.1.0) (2026-05-26)
 
 
