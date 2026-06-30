@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/leobishop234/util/log"
@@ -14,6 +17,7 @@ type statusRecorder struct {
 	status      int
 	bytes       int
 	wroteHeader bool
+	body        bytes.Buffer
 }
 
 func newStatusRecorder(w http.ResponseWriter) *statusRecorder {
@@ -32,6 +36,9 @@ func (r *statusRecorder) WriteHeader(statusCode int) {
 func (r *statusRecorder) Write(b []byte) (int, error) {
 	if !r.wroteHeader {
 		r.WriteHeader(http.StatusOK)
+	}
+	if r.status >= http.StatusBadRequest {
+		r.body.Write(b)
 	}
 	n, err := r.ResponseWriter.Write(b)
 	r.bytes += n
@@ -60,6 +67,12 @@ func Logging(logger *log.Logger) func(http.Handler) http.Handler {
 				Dur("duration", time.Since(startedAt)).
 				Str("remote_addr", r.RemoteAddr).
 				Str("user_agent", r.UserAgent())
+
+			if recorder.status >= http.StatusBadRequest {
+				if body := strings.TrimSpace(recorder.body.String()); body != "" {
+					logEvent = logEvent.Err(errors.New(body))
+				}
+			}
 
 			if metadata := GetLoggingMetadata(r.Context()); len(metadata) > 0 { //nolint:contextcheck // false positive, context is read only here
 				for key, value := range metadata {
