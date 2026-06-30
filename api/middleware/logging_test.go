@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/rs/zerolog"
@@ -72,6 +73,61 @@ func TestLoggingMiddleware_LogLevelByStatusCode(t *testing.T) {
 			}
 			if got, ok := logLine["status"].(float64); !ok || int(got) != tt.status {
 				t.Fatalf("expected status %d in log, got %v", tt.status, logLine["status"])
+			}
+		})
+	}
+}
+
+func TestLoggingMiddleware_LogsResponseBodyOnError(t *testing.T) {
+	tests := []struct {
+		name       string
+		status     int
+		body       string
+		wantErrLog string
+	}{
+		{
+			name:       "4xx logs response body as error",
+			status:     http.StatusBadRequest,
+			body:       "invalid input\n",
+			wantErrLog: "invalid input",
+		},
+		{
+			name:       "5xx logs response body as error",
+			status:     http.StatusInternalServerError,
+			body:       "Internal Server Error\n",
+			wantErrLog: "Internal Server Error",
+		},
+		{
+			name:   "2xx does not log response body",
+			status: http.StatusOK,
+			body:   "all good\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var output bytes.Buffer
+			logger := zerolog.New(&output)
+
+			middleware := Logging(&logger)
+			handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, strings.TrimSpace(tt.body), tt.status)
+			}))
+
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+
+			logLine := firstLogLine(t, &output)
+
+			if tt.wantErrLog != "" {
+				if got, ok := logLine["error"].(string); !ok || got != tt.wantErrLog {
+					t.Fatalf("expected error field %q, got %v", tt.wantErrLog, logLine["error"])
+				}
+			} else {
+				if _, present := logLine["error"]; present {
+					t.Fatalf("expected no error field, but got %v", logLine["error"])
+				}
 			}
 		})
 	}
