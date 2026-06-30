@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/leobishop234/util/compare/v1.1.1...v1.2.0) (2026-06-30)
+
+
+### Features
+
+* http logging middleware logs error body ([#13](https://github.com/leobishop234/util/issues/13)) ([c56b255](https://github.com/leobishop234/util/commit/c56b2556779b7cb7942d940437b79cc0cfff02ee))
+
 ## [1.1.1](https://github.com/leobishop234/util/compare/v1.1.0...v1.1.1) (2026-06-16)
 
 
