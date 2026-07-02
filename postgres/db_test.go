@@ -5,7 +5,7 @@ import (
 )
 
 func TestBuildDBURL(t *testing.T) {
-	base := Config{
+	base := DBConfig{
 		Host:     "localhost",
 		Port:     5432,
 		Database: "mydb",
