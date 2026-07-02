@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/leobishop234/util/compare/v1.2.0...v1.3.0) (2026-07-02)
+
+
+### Features
+
+* **postgres:** connection options support ([#15](https://github.com/leobishop234/util/issues/15)) ([94a08ae](https://github.com/leobishop234/util/commit/94a08ae6fae4eb1f7aaf59863a9e4ecbd47c90dd))
+
 ## [1.2.0](https://github.com/leobishop234/util/compare/v1.1.1...v1.2.0) (2026-06-30)
 
 
