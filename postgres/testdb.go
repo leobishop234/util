@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"sync"
 	"testing"
@@ -40,7 +41,7 @@ type TestDB[D Closer] struct {
 	closeErr          error
 }
 
-func newTestDBConfig(ctx context.Context) (Config, *testDBContainer, error) {
+func newTestDBConfig(ctx context.Context) (DBConfig, *testDBContainer, error) {
 	postgresContainer, err := psqlContainer.Run(ctx,
 		testDatabaseImage,
 		psqlContainer.WithDatabase(testDatabaseName),
@@ -52,17 +53,17 @@ func newTestDBConfig(ctx context.Context) (Config, *testDBContainer, error) {
 		),
 	)
 	if err != nil {
-		return Config{}, nil, Error("failed to start postgres test container", err, srverr.ErrCodeDependencyFailure)
+		return DBConfig{}, nil, Error("failed to start postgres test container", err, srverr.ErrCodeDependencyFailure)
 	}
 
 	host, err := postgresContainer.Host(ctx)
 	if err != nil {
-		return Config{}, nil, Error("failed to get postgres test container host", err, srverr.ErrCodeDependencyFailure)
+		return DBConfig{}, nil, Error("failed to get postgres test container host", err, srverr.ErrCodeDependencyFailure)
 	}
 
 	port, err := postgresContainer.MappedPort(ctx, testDatabasePort)
 	if err != nil {
-		return Config{}, nil, Error("failed to get postgres test container port", err, srverr.ErrCodeDependencyFailure)
+		return DBConfig{}, nil, Error("failed to get postgres test container port", err, srverr.ErrCodeDependencyFailure)
 	}
 
 	// Use 127.0.0.1 if host resolves to localhost to avoid IPv6 issues.
@@ -70,21 +71,21 @@ func newTestDBConfig(ctx context.Context) (Config, *testDBContainer, error) {
 		host = "127.0.0.1"
 	}
 
-	return Config{
-		Host:              host,
-		Port:              int(port.Num()),
-		Database:          testDatabaseName,
-		User:              testDatabaseUser,
-		Pass:              testDatabasePass,
-		Sslmode:           testDatabaseSslmode,
-		MigrationsEnabled: true,
-		AtlasBin:          "atlas",
+	return DBConfig{
+		Host:     host,
+		Port:     int(port.Num()),
+		Database: testDatabaseName,
+		User:     testDatabaseUser,
+		Pass:     testDatabasePass,
+		Sslmode:  testDatabaseSslmode,
 	}, &testDBContainer{PostgresContainer: postgresContainer}, nil
 }
 
 func NewServiceTestDB[D Closer](
 	t *testing.T,
-	open func(ctx context.Context, conf, devConf Config) (D, error),
+	atlasBin string,
+	schema embed.FS,
+	open func(ctx context.Context, conf DBConfig, opts ...Option) (D, error),
 	seed func(t *testing.T, db D),
 ) *TestDB[D] {
 	t.Helper()
@@ -95,7 +96,7 @@ func NewServiceTestDB[D Closer](
 	devConfig, devContainer, err := newTestDBConfig(t.Context())
 	require.NoError(t, err)
 
-	db, err := open(t.Context(), config, devConfig)
+	db, err := open(t.Context(), config, Migration(MigrationConfig{true, atlasBin}, devConfig, schema))
 	require.NoError(t, err)
 
 	if seed != nil {
