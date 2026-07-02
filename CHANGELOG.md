@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/leobishop234/util/compare/v1.3.0...v1.4.0) (2026-07-02)
+
+
+### Features
+
+* **postgres:** optional database migration ([#17](https://github.com/leobishop234/util/issues/17)) ([7762494](https://github.com/leobishop234/util/commit/7762494843a123eb3b838bf1efa570d1900849aa))
+
 ## [1.3.0](https://github.com/leobishop234/util/compare/v1.2.0...v1.3.0) (2026-07-02)
 
 
