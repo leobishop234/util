@@ -6,8 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"ariga.io/atlas/atlasexec"
 	"github.com/jmoiron/sqlx"
@@ -26,6 +29,7 @@ type Config struct {
 	User              string
 	Pass              string //nolint:gosec // internal config not exposed publicly
 	Sslmode           string
+	Options           map[string]string
 	MigrationsEnabled bool
 	AtlasBin          string
 }
@@ -114,8 +118,25 @@ func applySchema(ctx context.Context, conf, devConf Config, schemaDir, atlasBin 
 }
 
 func buildDBURL(aConfig Config) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+	u := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		aConfig.User, aConfig.Pass, aConfig.Host, aConfig.Port, aConfig.Database, aConfig.Sslmode)
+
+	if len(aConfig.Options) > 0 {
+		keys := make([]string, 0, len(aConfig.Options))
+		for k := range aConfig.Options {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		parts := make([]string, 0, len(keys))
+		for _, k := range keys {
+			parts = append(parts, k+"="+aConfig.Options[k])
+		}
+
+		u += "&options=" + url.QueryEscape(strings.Join(parts, " "))
+	}
+
+	return u
 }
 
 func schemaDir(schemaFS embed.FS) (tmpDir string, clnup func(), err error) {
