@@ -22,32 +22,56 @@ const (
 	PsqlMaxParams = 65535
 )
 
-type Config struct {
-	Host              string
-	Port              int
-	Database          string
-	User              string
-	Pass              string //nolint:gosec // internal config not exposed publicly
-	Sslmode           string
-	Options           map[string]string
-	MigrationsEnabled bool
-	AtlasBin          string
+type DBConfig struct {
+	Host     string
+	Port     int
+	Database string
+	User     string
+	Pass     string //nolint:gosec // internal config not exposed publicly
+	Sslmode  string
+	Options  map[string]string
 }
 
 type DB struct {
 	*sqlx.DB
-	config Config
+	config DBConfig
 }
 
-func InitDB(ctx context.Context, conf, testConf Config, schema embed.FS) (*DB, error) {
-	if conf.MigrationsEnabled {
-		schemaDir, clnup, err := schemaDir(schema)
+// Option configures InitDB behaviour.
+type Option func(*dbOptions)
+
+type dbOptions struct {
+	migration *migrationOpts
+}
+
+type migrationOpts struct {
+	atlasBin string
+	db       DBConfig
+	schema   embed.FS
+}
+
+// Migration returns an Option that runs Atlas schema migrations against conf
+// using devDB as the Atlas dev database and schema as the embedded SQL files.
+func Migration(atlasBin string, db DBConfig, schema embed.FS) Option {
+	return func(o *dbOptions) {
+		o.migration = &migrationOpts{atlasBin: atlasBin, schema: schema}
+	}
+}
+
+func InitDB(ctx context.Context, conf DBConfig, opts ...Option) (*DB, error) {
+	o := &dbOptions{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	if o.migration != nil {
+		schDir, clnup, err := schemaDir(o.migration.schema)
 		if err != nil {
 			return nil, err
 		}
 		defer clnup()
 
-		if err := applySchema(ctx, conf, testConf, schemaDir, conf.atlasBin()); err != nil {
+		if err := applySchema(ctx, conf, o.migration.db, schDir, o.migration.atlasBin); err != nil {
 			return nil, err
 		}
 	}
@@ -68,7 +92,7 @@ func (db *DB) Close() error {
 	return nil
 }
 
-func openDB(ctx context.Context, conf Config) (*DB, error) {
+func openDB(ctx context.Context, conf DBConfig) (*DB, error) {
 	db, err := sqlx.Open(string("postgres"), buildDBURL(conf))
 	if err != nil {
 		return nil, Error("failed to open database", err, srverr.ErrCodeDependencyFailure)
@@ -81,15 +105,7 @@ func openDB(ctx context.Context, conf Config) (*DB, error) {
 	return &DB{DB: db, config: conf}, nil
 }
 
-func (c Config) atlasBin() string {
-	if c.AtlasBin == "" {
-		return "atlas"
-	}
-
-	return c.AtlasBin
-}
-
-func applySchema(ctx context.Context, conf, devConf Config, schemaDir, atlasBin string) (err error) {
+func applySchema(ctx context.Context, conf, devConf DBConfig, schemaDir, atlasBin string) (err error) {
 	workDir, err := atlasexec.NewWorkingDir()
 	if err != nil {
 		return Error("failed to create atlas working directory", err, srverr.ErrCodeInternal)
@@ -117,7 +133,7 @@ func applySchema(ctx context.Context, conf, devConf Config, schemaDir, atlasBin 
 	return nil
 }
 
-func buildDBURL(aConfig Config) string {
+func buildDBURL(aConfig DBConfig) string {
 	u := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		aConfig.User, aConfig.Pass, aConfig.Host, aConfig.Port, aConfig.Database, aConfig.Sslmode)
 
