@@ -54,7 +54,7 @@ type migrationOpts struct {
 // using devDB as the Atlas dev database and schema as the embedded SQL files.
 func Migration(atlasBin string, db DBConfig, schema embed.FS) Option {
 	return func(o *dbOptions) {
-		o.migration = &migrationOpts{atlasBin: atlasBin, schema: schema}
+		o.migration = &migrationOpts{atlasBin: atlasBin, db: db, schema: schema}
 	}
 }
 
