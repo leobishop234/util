@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/leobishop234/util/compare/v1.4.0...v1.5.0) (2026-08-30)
+
+
+### Features
+
+* Exposing middlware list directly ([#21](https://github.com/leobishop234/util/issues/21)) ([c51e906](https://github.com/leobishop234/util/commit/c51e906efc15764d822972e91a545125b6e00138))
+
+
+### Bug Fixes
+
+* Postgres migration applied to correct database ([#19](https://github.com/leobishop234/util/issues/19)) ([2e20c7b](https://github.com/leobishop234/util/commit/2e20c7b9c85e5664c18ae48a95e575daa86a44af))
+
 ## [1.4.0](https://github.com/leobishop234/util/compare/v1.3.0...v1.4.0) (2026-07-02)
 
 
