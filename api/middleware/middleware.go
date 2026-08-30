@@ -8,16 +8,16 @@ import (
 
 // ApplyMiddleware wraps a handler with the default middleware stack.
 func ApplyMiddleware(logger *log.Logger, handler http.Handler) http.Handler {
-	for _, mw := range middlewares(logger) {
+	for _, mw := range Middlewares(logger) {
 		handler = mw(handler)
 	}
 
 	return handler
 }
 
-// middlewares returns the default middleware stack in execution order.
+// Middlewares returns the default middleware stack in execution order.
 // This applies as: Context -> Logging -> Recovery -> Handler.
-func middlewares(logger *log.Logger) []func(http.Handler) http.Handler {
+func Middlewares(logger *log.Logger) []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
 		CORS(),
 		Recovery(),
