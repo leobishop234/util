@@ -18,7 +18,7 @@ func TestMiddlewares_OrderRecoversAndLogs(t *testing.T) {
 		panic("boom")
 	})
 
-	for _, middleware := range middlewares(&logger) {
+	for _, middleware := range Middlewares(&logger) {
 		handler = middleware(handler)
 	}
 
