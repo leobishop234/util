@@ -20,7 +20,7 @@ func ApplyMiddleware(logger *observe.Logger, handler http.Handler) http.Handler 
 func Middlewares(logger *observe.Logger) []func(http.Handler) http.Handler {
 	return []func(http.Handler) http.Handler{
 		CORS(),
-		Logging(logger),
 		Recovery(),
+		Logging(logger),
 	}
 }
