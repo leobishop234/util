@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/leobishop234/util/compare/v1.6.0...v1.7.0) (2026-09-05)
+
+
+### Features
+
+* Extracting logging and logging metadata support to observe package. ([#24](https://github.com/leobishop234/util/issues/24)) ([86bb5a0](https://github.com/leobishop234/util/commit/86bb5a04c7f12818f827375fe90c8f53b00d71af))
+
 ## [1.6.0](https://github.com/leobishop234/util/compare/v1.5.0...v1.6.0) (2026-08-30)
 
 
