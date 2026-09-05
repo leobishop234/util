@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/leobishop234/util/observe"
 )
 
 func TestRecoveryMiddleware_ReturnsInternalServerError(t *testing.T) {
@@ -17,8 +19,8 @@ func TestRecoveryMiddleware_ReturnsInternalServerError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/panic", http.NoBody)
 	req = req.WithContext(context.WithValue(
 		req.Context(),
-		LoggingMetadataKey{},
-		LoggingMetadata{},
+		observe.LoggingMetadataKey{},
+		observe.LoggingMetadata{},
 	))
 	rr := httptest.NewRecorder()
 

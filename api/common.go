@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/leobishop234/util/api/middleware"
+	"github.com/leobishop234/util/observe"
 	"github.com/leobishop234/util/srverr"
 )
 
@@ -13,7 +13,7 @@ func WriteJSON(w http.ResponseWriter, r *http.Request, status int, data any) {
 	w.WriteHeader(status)
 	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
-		middleware.SetLoggingMetadata(r.Context(), "response-err", err.Error())
+		observe.SetLoggingMetadata(r.Context(), "response-err", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -22,12 +22,12 @@ func WriteJSON(w http.ResponseWriter, r *http.Request, status int, data any) {
 func WriteError(w http.ResponseWriter, r *http.Request, err error) {
 	serErr, ok := srverr.Unwrap(err)
 	if !ok {
-		middleware.SetLoggingMetadata(r.Context(), middleware.LogErrKey, err.Error())
+		observe.SetLoggingMetadata(r.Context(), observe.LogMetadataErrKey, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	middleware.SetLoggingMetadata(r.Context(), middleware.LogErrKey, err.Error())
+	observe.SetLoggingMetadata(r.Context(), observe.LogMetadataErrKey, err.Error())
 	WriteJSON(w, r, ErrCodeToHTTPStatus(serErr.Code()), serErr)
 }
 
