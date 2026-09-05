@@ -1,6 +1,7 @@
-package log
+package observe
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -73,4 +74,25 @@ func TestLogger(t *testing.T) *Logger {
 	logger := zerolog.New(t.Output())
 	logger = logger.Level(LevelTrace)
 	return &logger
+}
+
+var (
+	LogMetadataErrKey   = "error"
+	LogMetadataPanicKey = "panic"
+)
+
+type LoggingMetadataKey struct{}
+type LoggingMetadata map[string]any
+
+func LoggingContext(ctx context.Context) context.Context {
+	metadata := LoggingMetadata{}
+	return context.WithValue(ctx, LoggingMetadataKey{}, metadata)
+}
+
+func GetLoggingMetadata(ctx context.Context) LoggingMetadata {
+	return ctx.Value(LoggingMetadataKey{}).(LoggingMetadata)
+}
+
+func SetLoggingMetadata(ctx context.Context, key string, value any) {
+	GetLoggingMetadata(ctx)[key] = value
 }
