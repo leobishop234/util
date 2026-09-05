@@ -8,15 +8,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/leobishop234/util/api/middleware"
+	"github.com/leobishop234/util/observe"
 	"github.com/leobishop234/util/srverr"
 	"github.com/stretchr/testify/require"
 )
 
-func requestWithLoggingMetadata(method, target string) (*http.Request, middleware.LoggingMetadata) {
-	metadata := middleware.LoggingMetadata{}
+func requestWithLoggingMetadata(method, target string) (*http.Request, observe.LoggingMetadata) {
+	metadata := observe.LoggingMetadata{}
 	req := httptest.NewRequest(method, target, nil)
-	ctx := context.WithValue(req.Context(), middleware.LoggingMetadataKey{}, metadata)
+	ctx := context.WithValue(req.Context(), observe.LoggingMetadataKey{}, metadata)
 	return req.WithContext(ctx), metadata
 }
 
@@ -49,7 +49,7 @@ func TestWriteErrorSetsJSONContentType(t *testing.T) {
 	var response map[string]any
 	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
 	require.Empty(t, response)
-	require.Equal(t, "code: 2, message: invalid request", metadata[middleware.LogErrKey])
+	require.Equal(t, "code: 2, message: invalid request", metadata[observe.LogMetadataErrKey])
 }
 
 func TestWriteErrorSetsMetadataForGenericError(t *testing.T) {
@@ -62,7 +62,7 @@ func TestWriteErrorSetsMetadataForGenericError(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, recorder.Code)
 	require.Equal(t, "something went wrong\n", recorder.Body.String())
-	require.Equal(t, "something went wrong", metadata[middleware.LogErrKey])
+	require.Equal(t, "something went wrong", metadata[observe.LogMetadataErrKey])
 }
 
 func TestWriteJSONSetsResponseErrorMetadataWhenEncodingFails(t *testing.T) {
